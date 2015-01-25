@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-char* xor_op(FILE *input, FILE *output, char *key, size_t length){
+void xor_op(FILE *input, FILE *output, char *key, size_t length){
     int i = 0, c;
     while ((c = fgetc(input)) != EOF){
         if (i > length - 1){
