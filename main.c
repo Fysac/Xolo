@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
 
-    while ((option = getopt(argc - 2, argv, "hd:l:")) != -1) {
+    while ((option = getopt(argc, argv, "hd:l:")) != -1) {
         switch (option) {
             case 'h':
                 print_usage();
