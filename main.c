@@ -6,6 +6,13 @@
 
 void print_usage(void);
 
+void print_usage(){
+    fprintf(stderr, "usage: xolo [OPTIONS] <input file> <output file>\n");
+    fprintf(stderr, "-h, --help\t\t\tShow usage.\n");
+    fprintf(stderr, "-d, --decrypt=KEYFILE\t\tDecrypt using specified key file.\n");
+    fprintf(stderr, "-l, --key-length=NUMBER\t\tForce encryption key length, in bytes. Defaults\n\t\t\t\tto 100.\n");
+}
+
 int main(int argc, char *argv[]){
     char *input_name, *output_name, *keyfile_name = "KEYFILE";
     FILE *input = NULL, *output = NULL, *keyfile = NULL;
@@ -80,11 +87,4 @@ int main(int argc, char *argv[]){
 
     xor_op(input, output, key, length);
     return EXIT_SUCCESS;
-}
-
-void print_usage(){
-    fprintf(stderr, "usage: xolo [OPTIONS] <input file> <output file>\n");
-    fprintf(stderr, "-h, --help\t\t\tShow usage.\n");
-    fprintf(stderr, "-d, --decrypt=KEYFILE\t\tDecrypt using specified key file.\n");
-    fprintf(stderr, "-l, --key-length=NUMBER\t\tForce encryption key length, in bytes. Defaults\n\t\t\t\tto 100.\n");
 }
