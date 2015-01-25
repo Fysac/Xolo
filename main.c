@@ -11,7 +11,6 @@ int main(int argc, char *argv[]){
     FILE *input = NULL, *output = NULL, *keyfile = NULL;
     char *key;
     size_t length = 100;
-    int decrypt = 0;
     int option;
 
     if (argc < 2){
@@ -25,7 +24,6 @@ int main(int argc, char *argv[]){
                 print_usage();
                 return EXIT_SUCCESS;
             case 'd':
-                decrypt = 1;
                 keyfile_name = optarg;
                 keyfile = fopen(keyfile_name, "r");
 
@@ -55,12 +53,15 @@ int main(int argc, char *argv[]){
     }
     output = fopen(output_name, "w");
 
-    if (!decrypt){
+    // Encrypt mode
+    if (keyfile == NULL){
         key = generate_key(length);
         keyfile = fopen(keyfile_name, "w");
         fwrite(key, sizeof(char), length, keyfile);
         printf("encrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, keyfile_name, length, output_name);
     }
+
+    // Decrypt mode
     else {
         int i = 0;
         while (fgetc(keyfile) != EOF){
