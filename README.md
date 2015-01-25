@@ -4,15 +4,15 @@
 
 usage: xolo [OPTIONS] \<input file\> \<output file\>
 
--h, --help			
+**-h, --help**			
 
 Show usage.
 
--d, --decrypt=KEYFILE		
+**-d, --decrypt=KEYFILE**	
 
 Decrypt using specified key file.
 
--l, --key-length=NUMBER		
+**-l, --key-length=NUMBER**
 
 Force encryption key length, in bytes. Defaults to 100.
 
