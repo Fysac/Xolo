@@ -2,7 +2,7 @@
 
 ### XOR cipher implemented in C.
 
-usage: xolo [OPTIONS] <input file> <output file>
+usage: xolo [OPTIONS] \<input file\> \<output file\>
 
 -h, --help			Show usage.
 
