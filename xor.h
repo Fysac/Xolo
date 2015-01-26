@@ -1,1 +1,1 @@
-void xor_op(FILE *input, FILE *output, char *key, size_t length);
+void xor_op(FILE *input, FILE *output, Key key);

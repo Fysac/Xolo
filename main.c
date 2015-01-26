@@ -4,6 +4,8 @@
 #include "key.h"
 #include "xor.h"
 
+#define DEFAULT_KEY_LENGTH 100
+
 void print_usage(void);
 
 void print_usage(){
@@ -14,10 +16,9 @@ void print_usage(){
 }
 
 int main(int argc, char *argv[]){
-    char *input_name, *output_name, *keyfile_name = "KEYFILE";
-    FILE *input = NULL, *output = NULL, *keyfile = NULL;
-    char *key;
-    size_t length = 100;
+    Key key = {NULL, NULL, NULL, DEFAULT_KEY_LENGTH};
+    char *input_name, *output_name;
+    FILE *input = NULL, *output = NULL;
     int option;
 
     if (argc < 2){
@@ -27,21 +28,27 @@ int main(int argc, char *argv[]){
 
     while ((option = getopt(argc, argv, "hd:l:")) != -1) {
         switch (option) {
+            // Help
             case 'h':
                 print_usage();
                 return EXIT_SUCCESS;
-            case 'd':
-                keyfile_name = optarg;
-                keyfile = fopen(keyfile_name, "r");
 
-                if (keyfile == NULL){
-                    fprintf(stderr, "%s: keyfile not found\n", keyfile_name);
+            // Decrypt
+            case 'd':
+                key.filename = optarg;
+                key.file = fopen(key.filename, "r");
+
+                if (key.file == NULL){
+                    fprintf(stderr, "%s: keyfile not found\n", key.filename);
                     print_usage();
                     return EXIT_FAILURE;
                 }
+                printf("keyfile: %s\n", key.filename);
                 break;
+
+            // Force key length
             case 'l':
-                length = atoi(optarg);
+                key.length = atoi(optarg);
                 break;
             default:
                 print_usage();
@@ -61,30 +68,19 @@ int main(int argc, char *argv[]){
     output = fopen(output_name, "w");
 
     // Encrypt mode
-    if (keyfile == NULL){
-        key = generate_key(length);
-        keyfile = fopen(keyfile_name, "w");
-        fwrite(key, sizeof(char), length, keyfile);
-        printf("encrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, keyfile_name, length, output_name);
+    if (key.file == NULL){
+        key = generate_key(key.length);
+        key.file = fopen(key.filename, "w");
+        fwrite(key.data, sizeof(char), key.length, key.file);
+        printf("encrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, key.filename, key.length, output_name);
     }
 
     // Decrypt mode
     else {
-        int i = 0;
-        while (fgetc(keyfile) != EOF){
-            i++;
-        }
-        length = i;
-        key = calloc(length, sizeof(char));
-        i = 0;
-
-        fseek(keyfile, 0, SEEK_SET);
-        while ((key[i] = fgetc(keyfile)) != EOF){
-            i++;
-        }
-        printf("decrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, keyfile_name, length, output_name);
+        key = read_key(key.file);
+        printf("decrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, key.filename, key.length, output_name);
     }
 
-    xor_op(input, output, key, length);
+    xor_op(input, output, key);
     return EXIT_SUCCESS;
 }
