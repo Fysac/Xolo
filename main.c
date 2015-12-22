@@ -4,8 +4,6 @@
 #include "key.h"
 #include "xor.h"
 
-#define DEFAULT_KEY_LENGTH 100
-
 void print_usage(void);
 
 void print_usage(){
