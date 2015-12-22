@@ -1,8 +1,2 @@
-typedef struct Key {
-    char *filename;
-    FILE *file;
-    char *data;
-    size_t length;
-} Key;
-
-Key generate_key(size_t length);
+char* generate_random_key(char *key, size_t len);
+char* read_key_from_file(FILE *f, size_t len);

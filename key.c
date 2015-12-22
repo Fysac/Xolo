@@ -2,24 +2,17 @@
 #include <stdlib.h>
 #include "key.h"
 
-Key generate_key(size_t length){
-    Key key = {"KEYFILE", NULL, calloc(length, sizeof(char)), length};
-    FILE *urandom = fopen("/dev/urandom", "r");
-    fread(key.data, sizeof(char), key.length, urandom);
+char* generate_random_key(char *key, size_t len){
+    key = malloc(len);
+
+    // *nix CSPRNG is /dev/urandom
+    FILE *rng = fopen("/dev/urandom", "r");
+    fread(key, 1, len, rng);
     return key;
 }
 
-Key read_key(FILE* file){
-    int i = 0;
-    while (fgetc(key.file) != EOF){
-        i++;
-    }
-    key.length = i;
-    key.data = calloc(key.length, sizeof(char));
-    i = 0;
-
-    fseek(key.file, 0, SEEK_SET);
-    while ((key.data[i] = fgetc(key.file)) != EOF){
-        i++;
-    }
+char* read_key_from_file(FILE *f, size_t len){
+    char *key = malloc(len);
+    fread(key, 1, len, f);
+    return key;
 }
