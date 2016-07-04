@@ -2,17 +2,30 @@
 
 ### XOR cipher implemented in C.
 
-usage: xolo [OPTIONS] \<input file\> \<output file\>
+**Usage**
 
-**-h, --help**			
+`xolo [options] <input> <output>`
 
-Show usage.
+`-h`: Show usage.
 
-**-d, --decrypt=KEYFILE**	
+`-k`: Use existing key (default: generate random key).
 
-Decrypt using specified key file.
+`-b`: Generate this many bytes for key (default: 1024).
 
-**-l, --key-length=NUMBER**
+**Examples**
 
-Force encryption key length, in bytes. Defaults to 100.
+Encrypt a file:
 
+`xolo secret.txt encrypted.xor`
+
+Encrypt a file with bigger key:
+
+`xolo -b 4096 secret.txt encrypted.xor`
+
+Decrypt a file using existing key:
+
+`xolo -k private.key encrypted.xor secret.txt`
+
+**Obligatory Crypto Disclaimer**
+
+xolo is for educational purposes only. XOR ciphers/OTPs are unwieldy and vulnerable to numerous attacks. Don't use this for anything requiring actual security.

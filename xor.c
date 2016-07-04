@@ -1,15 +1,13 @@
 #include <stdio.h>
-#include "key.h"
+#include "xor.h"
 
-void xor_op(FILE *input, FILE *output, Key key){
-    int i = 0, c;
-    while ((c = fgetc(input)) != EOF){
-        if (i > key.length - 1){
+void xor_crypt(FILE *in, FILE *out, char *key, size_t len){
+    int i, c;
+    for (i = 0; (c = fgetc(in)) != EOF; i++){
+        if (i == len){
+            // Wrap to beginning of key
             i = 0;
         }
-        fputc(c ^ key.data[i], output);
-        i++;
+        fputc(key[i] ^ c, out);
     }
-    fclose(input);
-    fclose(output);
 }

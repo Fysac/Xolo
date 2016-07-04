@@ -4,83 +4,84 @@
 #include "key.h"
 #include "xor.h"
 
-#define DEFAULT_KEY_LENGTH 100
+void print_usage();
 
-void print_usage(void);
-
-void print_usage(){
-    fprintf(stderr, "usage: xolo [OPTIONS] <input file> <output file>\n");
-    fprintf(stderr, "-h, --help\t\t\tShow usage.\n");
-    fprintf(stderr, "-d, --decrypt=KEYFILE\t\tDecrypt using specified key file.\n");
-    fprintf(stderr, "-l, --key-length=NUMBER\t\tForce encryption key length, in bytes. Defaults\n\t\t\t\tto 100.\n");
+void print_usage(char *prog){
+    printf("usage: %s [options] <input> <output>\n", prog);
+    printf("-h\tShow usage\n");
+    printf("-k\tUse existing key (default: generate random key)\n");
+    printf("-b\tGenerate this many bytes for key (default: 1024)\n");
 }
 
 int main(int argc, char *argv[]){
-    Key key = {NULL, NULL, NULL, DEFAULT_KEY_LENGTH};
-    char *input_name, *output_name;
-    FILE *input = NULL, *output = NULL;
-    int option;
+    char *key;
+    FILE *kf;
+    size_t len = DEFAULT_KEY_LENGTH;
 
-    if (argc < 2){
-        print_usage();
-        return EXIT_FAILURE;
-    }
-
-    while ((option = getopt(argc, argv, "hd:l:")) != -1) {
-        switch (option) {
-            // Help
+    char opt;
+    while ((opt = getopt(argc, argv, "hk:b:")) != -1) {
+        switch (opt) {
+            // -h: help
             case 'h':
-                print_usage();
+                print_usage(argv[0]);
                 return EXIT_SUCCESS;
 
-            // Decrypt
-            case 'd':
-                key.filename = optarg;
-                key.file = fopen(key.filename, "r");
-
-                if (key.file == NULL){
-                    fprintf(stderr, "%s: keyfile not found\n", key.filename);
-                    print_usage();
+            // -k: use existing key
+            case 'k':
+                kf = fopen(optarg, "r");
+                if (kf == NULL){
+                    fprintf(stderr, "%s: key not found\n", optarg);
                     return EXIT_FAILURE;
                 }
-                printf("keyfile: %s\n", key.filename);
+
+                fseek(kf, 0, SEEK_END);
+                len = ftell(kf);
+                rewind(kf);
+
+                printf("using key: %s\n", optarg);
+                key = read_key_from_file(kf, len);
+                fclose(kf);
                 break;
 
-            // Force key length
-            case 'l':
-                key.length = atoi(optarg);
+            // -b: key length in bytes
+            case 'b':
+                len = atoi(optarg);
                 break;
+
             default:
-                print_usage();
+                fprintf("unrecognized option: -%c. use -h for help.", opt);
                 return EXIT_FAILURE;
         }
     }
 
-    input_name = argv[optind];
-    output_name = argv[optind + 1];
-
-    input = fopen(input_name, "r");
-    if (input == NULL){
-        fprintf(stderr, "%s: file not found\n", input_name);
-        print_usage();
+    FILE *in = fopen(argv[optind], "r");
+    FILE *out = fopen(argv[optind + 1], "w");
+    if (in == NULL){
+        fprintf(stderr, "%s: file not found\n", argv[optind]);
         return EXIT_FAILURE;
     }
-    output = fopen(output_name, "w");
 
     // Encrypt mode
-    if (key.file == NULL){
-        key = generate_key(key.length);
-        key.file = fopen(key.filename, "w");
-        fwrite(key.data, sizeof(char), key.length, key.file);
-        printf("encrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, key.filename, key.length, output_name);
+    if (kf == NULL){
+        key = generate_random_key(key, len);
+
+        printf("key for %s:\n%s", argv[optind + 1], key);
+        fwrite(key, 1, len, kf);
+        printf("encrypting: %s\nkey: %s (length %luB)\noutput: %s\n", argv[optind], fname, len, argv[optind + 1]);
     }
 
     // Decrypt mode
     else {
-        key = read_key(key.file);
-        printf("decrypting: %s\nkeyfile: %s (length %lu)\noutput: %s\n", input_name, key.filename, key.length, output_name);
-    }
+        fseek(kf, 0, SEEK_END);
+        key = read_key_from_file(kf, len);
 
-    xor_op(input, output, key);
+        printf("decrypting: %s\nkey: %s (length %luB)\noutput: %s\n", argv[optind], key.filename, len, argv[optind + 1]);
+    }
+    fclose(kf);
+
+    xor_crypt(in, out, key, len);
+    
+    fclose(in);
+    fclose(out);
     return EXIT_SUCCESS;
 }
